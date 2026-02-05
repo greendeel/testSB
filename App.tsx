@@ -76,10 +76,8 @@ const App: React.FC = () => {
     const updatedRounds = [...activeEvent.rounds];
     updatedRounds[0] = { ...updatedRounds[0], tables };
     await updateEvent({ ...activeEvent, rounds: updatedRounds });
-    setActiveTab('ROUND1_PLAY');
   };
 
-  // 🧮 SCORE OPSLAAN (REALTIME)
   const updateScore = async (pid: string, score: number) => {
     if (!activeEvent) return;
     const updatedRounds = [...activeEvent.rounds];
@@ -96,12 +94,16 @@ const App: React.FC = () => {
   };
 
   if (!isAuthenticated) {
-    return <LoginView onUnlock={(code) => {
-      if (code === CLUB_CODE) {
-        setIsAuthenticated(true);
-        localStorage.setItem('kajuit_auth', 'true');
-      } else alert('Onjuiste clubcode.');
-    }} />;
+    return (
+      <LoginView
+        onUnlock={(code) => {
+          if (code === CLUB_CODE) {
+            setIsAuthenticated(true);
+            localStorage.setItem('kajuit_auth', 'true');
+          } else alert('Onjuiste clubcode.');
+        }}
+      />
+    );
   }
 
   if (!activeEventId) {
@@ -130,9 +132,9 @@ const App: React.FC = () => {
         title={activeEvent!.title}
       />
 
-      {activeTab === 'REGISTRATION' && (
+      {activeTab === 'REGISTRATION' && activeEvent && (
         <RegistrationView
-          participants={activeEvent!.participants}
+          participants={activeEvent.participants}
           customNames={{ Jokeren: [], Rikken: [] }}
           onAddParticipant={addParticipant}
           onRemoveParticipant={removeParticipant}
@@ -142,9 +144,9 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND1' && activeEvent!.rounds[0].tables.length === 0 && (
+      {activeTab === 'ROUND1' && activeEvent && activeEvent.rounds.length > 0 && activeEvent.rounds[0].tables.length === 0 && (
         <TableAssignmentView
-          participants={activeEvent!.participants}
+          participants={activeEvent.participants}
           initialTables={[]}
           onConfirm={setRoundTables}
           onUpdateParticipantGame={() => {}}
@@ -152,17 +154,17 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND1_PLAY' && (
+      {activeTab === 'ROUND1' && activeEvent && activeEvent.rounds.length > 0 && activeEvent.rounds[0].tables.length > 0 && (
         <RoundView
-          round={activeEvent!.rounds[0]}
-          participants={activeEvent!.participants}
+          round={activeEvent.rounds[0]}
+          participants={activeEvent.participants}
           onScoreChange={updateScore}
           onFinishRound={finishRound}
           onResetTables={() => setActiveTab('ROUND1')}
           onUpdateParticipantTable={() => {}}
           isScoring={isScoring}
           setIsScoring={setIsScoring}
-          isEventFinished={activeEvent!.status === EventStatus.RESULTS}
+          isEventFinished={activeEvent.status === EventStatus.RESULTS}
         />
       )}
     </div>
