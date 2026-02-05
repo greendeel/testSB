@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CardEvent, EventStatus, GameType, Table } from './types';
 import DashboardView from './components/DashboardView';
 import RegistrationView from './components/RegistrationView';
@@ -19,26 +19,45 @@ const App: React.FC = () => {
   const [isScoring, setIsScoring] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => localStorage.getItem('kajuit_auth') === 'true');
 
+  // Voorkomt meerdere gelijktijdige loads
+  const isLoadingRef = useRef(false);
+
   const loadEvents = async () => {
-    const data = await getEvents();
-    setEvents(data);
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
+
+    try {
+      const data = await getEvents();
+      setEvents(data);
+    } finally {
+      isLoadingRef.current = false;
+    }
   };
 
   useEffect(() => {
     loadEvents();
+
     const channel = supabase
       .channel('events-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents())
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          loadEvents();
+        }
+      )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateEvent = async (updatedEvent: CardEvent) => {
     await saveEvent(updatedEvent);
   };
 
-  const activeEvent = events.find(e => e.id === activeEventId);
+  const activeEvent = events.find(e => e.id === activeEventId) || null;
 
   const createEvent = async (title: string) => {
     const newEvent: CardEvent = {
@@ -51,7 +70,6 @@ const App: React.FC = () => {
     };
 
     await updateEvent(newEvent);
-
     setActiveEventId(newEvent.id);
     setActiveTab('REGISTRATION');
   };
@@ -146,17 +164,26 @@ const App: React.FC = () => {
     );
   }
 
+  // Voorkomt grijs scherm terwijl nieuw event nog niet in state zit
+  if (activeEventId && !activeEvent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 text-slate-600 text-xl">
+        Middag wordt geladen...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">
       <Navigation
-        currentStatus={activeEvent!.status}
+        currentStatus={activeEvent.status}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onExit={() => setActiveEventId(null)}
-        title={activeEvent!.title}
+        title={activeEvent.title}
       />
 
-      {activeTab === 'REGISTRATION' && activeEvent && (
+      {activeTab === 'REGISTRATION' && (
         <RegistrationView
           participants={activeEvent.participants}
           customNames={{ Jokeren: [], Rikken: [] }}
@@ -168,7 +195,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND1' && activeEvent?.rounds[0]?.tables.length === 0 && (
+      {activeTab === 'ROUND1' && activeEvent.rounds[0]?.tables.length === 0 && (
         <TableAssignmentView
           participants={activeEvent.participants}
           initialTables={[]}
@@ -178,7 +205,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND1' && activeEvent?.rounds[0]?.tables.length > 0 && (
+      {activeTab === 'ROUND1' && activeEvent.rounds[0]?.tables.length > 0 && (
         <RoundView
           round={activeEvent.rounds[0]}
           participants={activeEvent.participants}
@@ -192,7 +219,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND2' && activeEvent?.rounds[1]?.tables.length === 0 && (
+      {activeTab === 'ROUND2' && activeEvent.rounds[1]?.tables.length === 0 && (
         <TableAssignmentView
           participants={activeEvent.participants}
           initialTables={[]}
@@ -202,7 +229,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND2' && activeEvent?.rounds[1]?.tables.length > 0 && (
+      {activeTab === 'ROUND2' && activeEvent.rounds[1]?.tables.length > 0 && (
         <RoundView
           round={activeEvent.rounds[1]}
           participants={activeEvent.participants}
@@ -216,7 +243,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'RESULTS' && activeEvent && (
+      {activeTab === 'RESULTS' && (
         <ResultsView
           participants={activeEvent.participants}
           rounds={activeEvent.rounds}
