@@ -76,7 +76,7 @@ const Navigation: React.FC<NavigationProps> = ({
               key={tab.id}
               disabled={locked}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 min-w-[120px] py-2.5 flex flex-col items-center gap-1 border-b-4 rounded-xl border border-black transition-all ${
+              className={`flex-1 min-w-[120px] py-2.5 flex flex-col items-center gap-1 border-b-4 rounded-xl border-black transition-all ${
                 active 
                   ? 'border-yellow-400 bg-blue-600 text-white'
                   : locked 
@@ -84,8 +84,8 @@ const Navigation: React.FC<NavigationProps> = ({
                     : 'border-slate-500 text-slate-400 hover:bg-slate-700 bg-slate-800'
               }`}
             >
-              <Icon size={20} />
-              <span className="text-xs font-black uppercase tracking-tighter">{tab.label}</span>
+              <Icon size={22} />
+              <span className="text-sm font-black uppercase tracking-tighter">{tab.label}</span>
             </button>
           );
         })}
