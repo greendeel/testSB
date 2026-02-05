@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { CardEvent, EventStatus, GameType } from './types';
 import DashboardView from './components/DashboardView';
 import RegistrationView from './components/RegistrationView';
-import Navigation from './components/Navigation';
 import LoginView from './components/LoginView';
 import { getEvents, saveEvent, deleteEvent as deleteEventFromDB, generateId } from './services/storage';
 import { supabase } from './services/supabaseClient';
@@ -12,7 +11,6 @@ const CLUB_CODE = '26091976';
 const App: React.FC = () => {
   const [events, setEvents] = useState<CardEvent[]>([]);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('REGISTRATION');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => localStorage.getItem('kajuit_auth') === 'true');
 
   const loadEvents = async () => {
@@ -20,7 +18,7 @@ const App: React.FC = () => {
     setEvents(data);
   };
 
-  // 🔄 Eerste keer laden + realtime updates
+  // 📡 Realtime sync
   useEffect(() => {
     loadEvents();
 
@@ -29,9 +27,7 @@ const App: React.FC = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'events' },
-        () => {
-          loadEvents();
-        }
+        () => loadEvents()
       )
       .subscribe();
 
@@ -54,18 +50,16 @@ const App: React.FC = () => {
       rounds: []
     };
     await updateEvent(newEvent);
-    setActiveEventId(newEvent.id);
+    alert("Nieuwe kaartmiddag aangemaakt!");
   };
 
   const deleteEvent = async (id: string) => {
     if (!confirm('Wilt u deze middag definitief verwijderen?')) return;
     await deleteEventFromDB(id);
-    if (activeEventId === id) setActiveEventId(null);
   };
 
   const activeEvent = events.find(e => e.id === activeEventId);
 
-  // 👥 Deelnemers aanpassen
   const addParticipant = async (name: string, game: GameType) => {
     if (!activeEvent) return;
     const updated = {
@@ -84,7 +78,6 @@ const App: React.FC = () => {
     await updateEvent(updated);
   };
 
-  // 🔐 Login
   if (!isAuthenticated) {
     return (
       <LoginView
@@ -92,26 +85,18 @@ const App: React.FC = () => {
           if (code === CLUB_CODE) {
             setIsAuthenticated(true);
             localStorage.setItem('kajuit_auth', 'true');
-          } else {
-            alert('Onjuiste clubcode.');
-          }
+          } else alert('Onjuiste clubcode.');
         }}
       />
     );
   }
 
-  // 📋 Dashboard
+  // 📋 Dashboard blijft hoofdscherm
   if (!activeEventId) {
     return (
       <DashboardView
         events={events}
-        onSelectEvent={(id) => {
-          const ev = events.find(e => e.id === id);
-          if (ev) {
-            setActiveEventId(id);
-            setActiveTab(ev.status);
-          }
-        }}
+        onSelectEvent={() => alert("Binnenkant van middagen komt hierna 👌")}
         onCreateEvent={createEvent}
         onDeleteEvent={deleteEvent}
         onExport={() => alert('Niet meer nodig')}
@@ -120,28 +105,16 @@ const App: React.FC = () => {
     );
   }
 
-  // 🧭 Binnen een kaartmiddag
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100">
-      <Navigation
-        currentStatus={activeEvent!.status}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onExit={() => setActiveEventId(null)}
-        title={activeEvent!.title}
-      />
-      {activeTab === 'REGISTRATION' && (
-        <RegistrationView
-          participants={activeEvent!.participants}
-          customNames={{ Jokeren: [], Rikken: [] }}
-          onAddParticipant={addParticipant}
-          onRemoveParticipant={removeParticipant}
-          onUpdateParticipantGame={() => {}}
-          onStartRound={() => {}}
-          isLocked={false}
-        />
-      )}
-    </div>
+    <RegistrationView
+      participants={activeEvent!.participants}
+      customNames={{ Jokeren: [], Rikken: [] }}
+      onAddParticipant={addParticipant}
+      onRemoveParticipant={removeParticipant}
+      onUpdateParticipantGame={() => {}}
+      onStartRound={() => {}}
+      isLocked={false}
+    />
   );
 };
 
