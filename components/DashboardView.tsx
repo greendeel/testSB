@@ -1,24 +1,21 @@
-
 import React, { useState } from 'react';
 import { CardEvent } from '../types';
-import { PlusCircle, Calendar, Trash2, Play, Download, Upload } from 'lucide-react';
+import { PlusCircle, Calendar, Trash2, Play } from 'lucide-react';
 
 interface DashboardViewProps {
   events: CardEvent[];
   onSelectEvent: (id: string) => void;
   onCreateEvent: (name: string) => void;
   onDeleteEvent: (id: string) => void;
-  onExport: () => void;
-  onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onExport: () => void;   // blijft staan voor compatibiliteit maar wordt niet gebruikt
+  onImport: (e: React.ChangeEvent<HTMLInputElement>) => void; // idem
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({ 
   events, 
   onSelectEvent, 
   onCreateEvent, 
-  onDeleteEvent,
-  onExport,
-  onImport
+  onDeleteEvent
 }) => {
   const [newName, setNewName] = useState('');
   
@@ -39,22 +36,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-12 pb-24">
-      {/* Container voor nieuwe middag */}
+      
+      {/* Nieuwe Kaartmiddag */}
       <div className="bg-white p-8 md:p-12 pt-44 md:pt-16 rounded-[3rem] border-4 border-blue-200 shadow-xl space-y-8 relative overflow-hidden">
         
-        {/* Het Officiële Logo */}
         <div className="absolute top-6 right-6 md:top-10 md:right-10 w-44 md:w-60 z-50 flex justify-end items-start pointer-events-none">
           <img 
             src="logo.jpg" 
             alt="Senioren Boschweg Logo" 
             className="w-full h-auto object-contain drop-shadow-2xl"
-            style={{ 
-              display: 'block',
-              maxWidth: '100%',
-              maxHeight: '115px',
-              minWidth: '94px',
-              filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08))'
-            }}
             onError={(e) => {
               const target = e.currentTarget;
               if (target.getAttribute('data-tried') === 'full') return;
@@ -101,6 +91,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
+      {/* Eerdere Middagen */}
       <div className="space-y-6">
         <div className="flex justify-between items-end px-4">
           <h3 className="text-2xl font-black text-slate-600 uppercase tracking-widest">Eerdere Middagen</h3>
@@ -147,31 +138,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             ))}
           </div>
         )}
-      </div>
-
-      {/* Gegevensbeheer Sectie */}
-      <div className="pt-12 border-t-2 border-slate-200">
-        <h3 className="text-xl font-black text-slate-500 uppercase tracking-widest px-4 mb-6">Gegevens Beheren</h3>
-        <div className="flex flex-wrap gap-4 px-4">
-          <button
-            onClick={onExport}
-            className="flex-1 min-w-[200px] flex items-center justify-center gap-3 bg-white border-4 border-slate-200 py-4 rounded-2xl font-black text-xl text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-all active:scale-95"
-          >
-            <Download size={24} /> EXPORTEREN
-          </button>
-          <label className="flex-1 min-w-[200px] flex items-center justify-center gap-3 bg-white border-4 border-slate-200 py-4 rounded-2xl font-black text-xl text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-all active:scale-95 cursor-pointer">
-            <Upload size={24} /> IMPORTEREN
-            <input 
-              type="file" 
-              accept=".json" 
-              onChange={onImport} 
-              className="hidden" 
-            />
-          </label>
-        </div>
-        <p className="mt-4 px-4 text-slate-400 font-bold text-sm italic">
-          Gebruik deze knoppen om gegevens handmatig over te zetten naar een ander apparaat.
-        </p>
       </div>
     </div>
   );
