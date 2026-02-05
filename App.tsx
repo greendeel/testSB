@@ -5,6 +5,7 @@ import RegistrationView from './components/RegistrationView';
 import Navigation from './components/Navigation';
 import LoginView from './components/LoginView';
 import { getEvents, saveEvent, deleteEvent as deleteEventFromDB, generateId } from './services/storage';
+import { supabase } from './services/supabaseClient';
 
 const CLUB_CODE = '26091976';
 
@@ -19,11 +20,28 @@ const App: React.FC = () => {
     setEvents(data);
   };
 
-  useEffect(() => { loadEvents(); }, []);
+  // 🔄 Eerste keer laden + realtime updates
+  useEffect(() => {
+    loadEvents();
+
+    const channel = supabase
+      .channel('events-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          loadEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const updateEvent = async (updatedEvent: CardEvent) => {
     await saveEvent(updatedEvent);
-    await loadEvents();
   };
 
   const createEvent = async (title: string) => {
@@ -42,13 +60,12 @@ const App: React.FC = () => {
   const deleteEvent = async (id: string) => {
     if (!confirm('Wilt u deze middag definitief verwijderen?')) return;
     await deleteEventFromDB(id);
-    await loadEvents();
     if (activeEventId === id) setActiveEventId(null);
   };
 
   const activeEvent = events.find(e => e.id === activeEventId);
 
-  // 👇 NIEUW: deelnemer toevoegen
+  // 👥 Deelnemers aanpassen
   const addParticipant = async (name: string, game: GameType) => {
     if (!activeEvent) return;
     const updated = {
@@ -67,22 +84,33 @@ const App: React.FC = () => {
     await updateEvent(updated);
   };
 
+  // 🔐 Login
   if (!isAuthenticated) {
-    return <LoginView onUnlock={(code) => {
-      if (code === CLUB_CODE) {
-        setIsAuthenticated(true);
-        localStorage.setItem('kajuit_auth', 'true');
-      } else alert('Onjuiste clubcode.');
-    }} />;
+    return (
+      <LoginView
+        onUnlock={(code) => {
+          if (code === CLUB_CODE) {
+            setIsAuthenticated(true);
+            localStorage.setItem('kajuit_auth', 'true');
+          } else {
+            alert('Onjuiste clubcode.');
+          }
+        }}
+      />
+    );
   }
 
+  // 📋 Dashboard
   if (!activeEventId) {
     return (
       <DashboardView
         events={events}
         onSelectEvent={(id) => {
           const ev = events.find(e => e.id === id);
-          if (ev) { setActiveEventId(id); setActiveTab(ev.status); }
+          if (ev) {
+            setActiveEventId(id);
+            setActiveTab(ev.status);
+          }
         }}
         onCreateEvent={createEvent}
         onDeleteEvent={deleteEvent}
@@ -92,6 +120,7 @@ const App: React.FC = () => {
     );
   }
 
+  // 🧭 Binnen een kaartmiddag
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">
       <Navigation
