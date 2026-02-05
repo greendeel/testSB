@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { CardEvent, EventStatus, GameType } from './types';
+import { CardEvent, EventStatus, GameType, Table } from './types';
 import DashboardView from './components/DashboardView';
 import RegistrationView from './components/RegistrationView';
+import TableAssignmentView from './components/TableAssignmentView';
 import Navigation from './components/Navigation';
 import LoginView from './components/LoginView';
 import { getEvents, saveEvent, deleteEvent as deleteEventFromDB, generateId } from './services/storage';
@@ -20,27 +21,20 @@ const App: React.FC = () => {
     setEvents(data);
   };
 
-  // 📡 Realtime sync
   useEffect(() => {
     loadEvents();
-
     const channel = supabase
       .channel('events-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'events' },
-        () => loadEvents()
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const updateEvent = async (updatedEvent: CardEvent) => {
     await saveEvent(updatedEvent);
   };
+
+  const activeEvent = events.find(e => e.id === activeEventId);
 
   const createEvent = async (title: string) => {
     const newEvent: CardEvent = {
@@ -59,49 +53,38 @@ const App: React.FC = () => {
     await deleteEventFromDB(id);
   };
 
-  const activeEvent = events.find(e => e.id === activeEventId);
-
   const addParticipant = async (name: string, game: GameType) => {
     if (!activeEvent) return;
-    const updated = {
-      ...activeEvent,
-      participants: [...activeEvent.participants, { id: generateId(), name, game }]
-    };
-    await updateEvent(updated);
+    await updateEvent({ ...activeEvent, participants: [...activeEvent.participants, { id: generateId(), name, game }] });
   };
 
   const removeParticipant = async (id: string) => {
     if (!activeEvent) return;
-    const updated = {
-      ...activeEvent,
-      participants: activeEvent.participants.filter(p => p.id !== id)
-    };
-    await updateEvent(updated);
+    await updateEvent({ ...activeEvent, participants: activeEvent.participants.filter(p => p.id !== id) });
   };
 
-  // ▶️ START RONDE 1
   const startRound = async () => {
     if (!activeEvent) return;
-    const updated = {
-      ...activeEvent,
-      status: EventStatus.ROUND1,
-      rounds: [{ number: 1, tables: [], scores: {} }]
-    };
-    await updateEvent(updated);
+    await updateEvent({ ...activeEvent, status: EventStatus.ROUND1, rounds: [{ number: 1, tables: [], scores: {} }] });
     setActiveTab('ROUND1');
   };
 
+  // 🪑 Tafels opslaan
+  const setRoundTables = async (tables: Table[]) => {
+    if (!activeEvent) return;
+    const updatedRounds = [...activeEvent.rounds];
+    updatedRounds[0] = { ...updatedRounds[0], tables };
+    await updateEvent({ ...activeEvent, rounds: updatedRounds });
+    setActiveTab('ROUND1_PLAY');
+  };
+
   if (!isAuthenticated) {
-    return (
-      <LoginView
-        onUnlock={(code) => {
-          if (code === CLUB_CODE) {
-            setIsAuthenticated(true);
-            localStorage.setItem('kajuit_auth', 'true');
-          } else alert('Onjuiste clubcode.');
-        }}
-      />
-    );
+    return <LoginView onUnlock={(code) => {
+      if (code === CLUB_CODE) {
+        setIsAuthenticated(true);
+        localStorage.setItem('kajuit_auth', 'true');
+      } else alert('Onjuiste clubcode.');
+    }} />;
   }
 
   if (!activeEventId) {
@@ -110,10 +93,7 @@ const App: React.FC = () => {
         events={events}
         onSelectEvent={(id) => {
           const ev = events.find(e => e.id === id);
-          if (ev) {
-            setActiveEventId(id);
-            setActiveTab(ev.status);
-          }
+          if (ev) { setActiveEventId(id); setActiveTab(ev.status); }
         }}
         onCreateEvent={createEvent}
         onDeleteEvent={deleteEvent}
@@ -132,6 +112,7 @@ const App: React.FC = () => {
         onExit={() => setActiveEventId(null)}
         title={activeEvent!.title}
       />
+
       {activeTab === 'REGISTRATION' && (
         <RegistrationView
           participants={activeEvent!.participants}
@@ -141,6 +122,16 @@ const App: React.FC = () => {
           onUpdateParticipantGame={() => {}}
           onStartRound={startRound}
           isLocked={false}
+        />
+      )}
+
+      {activeTab === 'ROUND1' && activeEvent!.rounds[0] && activeEvent!.rounds[0].tables.length === 0 && (
+        <TableAssignmentView
+          participants={activeEvent!.participants}
+          initialTables={[]}
+          onConfirm={setRoundTables}
+          onUpdateParticipantGame={() => {}}
+          roundNumber={1}
         />
       )}
     </div>
