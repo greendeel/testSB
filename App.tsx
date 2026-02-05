@@ -49,7 +49,11 @@ const App: React.FC = () => {
       participants: [],
       rounds: []
     };
+
     await updateEvent(newEvent);
+
+    setActiveEventId(newEvent.id);
+    setActiveTab('REGISTRATION');
   };
 
   const deleteEvent = async (id: string) => {
@@ -65,6 +69,16 @@ const App: React.FC = () => {
   const removeParticipant = async (id: string) => {
     if (!activeEvent) return;
     await updateEvent({ ...activeEvent, participants: activeEvent.participants.filter(p => p.id !== id) });
+  };
+
+  const updateParticipantGame = async (id: string, newGame: GameType) => {
+    if (!activeEvent) return;
+    await updateEvent({
+      ...activeEvent,
+      participants: activeEvent.participants.map(p =>
+        p.id === id ? { ...p, game: newGame } : p
+      )
+    });
   };
 
   const startRound1 = async () => {
@@ -126,8 +140,8 @@ const App: React.FC = () => {
         }}
         onCreateEvent={createEvent}
         onDeleteEvent={deleteEvent}
-        onExport={() => alert('Niet meer nodig')}
-        onImport={() => alert('Niet meer nodig')}
+        onExport={() => {}}
+        onImport={() => {}}
       />
     );
   }
@@ -148,7 +162,7 @@ const App: React.FC = () => {
           customNames={{ Jokeren: [], Rikken: [] }}
           onAddParticipant={addParticipant}
           onRemoveParticipant={removeParticipant}
-          onUpdateParticipantGame={() => {}}
+          onUpdateParticipantGame={updateParticipantGame}
           onStartRound={startRound1}
           isLocked={false}
         />
@@ -159,7 +173,7 @@ const App: React.FC = () => {
           participants={activeEvent.participants}
           initialTables={[]}
           onConfirm={(tables) => setRoundTables(0, tables)}
-          onUpdateParticipantGame={() => {}}
+          onUpdateParticipantGame={updateParticipantGame}
           roundNumber={1}
         />
       )}
@@ -183,7 +197,7 @@ const App: React.FC = () => {
           participants={activeEvent.participants}
           initialTables={[]}
           onConfirm={(tables) => setRoundTables(1, tables)}
-          onUpdateParticipantGame={() => {}}
+          onUpdateParticipantGame={updateParticipantGame}
           roundNumber={2}
         />
       )}
