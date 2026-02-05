@@ -7,7 +7,7 @@ interface Props {
   onTabChange: (tab: string) => void;
   onExit: () => void;
   title: string;
-  onRename: (newTitle: string) => void; // 🆕
+  onRename: (newTitle: string) => void;
 }
 
 const Navigation: React.FC<Props> = ({
@@ -26,28 +26,48 @@ const Navigation: React.FC<Props> = ({
     }
   };
 
+  const tabStyle = (tab: string) =>
+    `px-4 py-2 rounded-lg font-medium transition ${
+      activeTab === tab
+        ? 'bg-blue-600 text-white shadow'
+        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+    }`;
+
   return (
-    <div className="bg-white shadow p-4 flex flex-col gap-3">
+    <div className="bg-white shadow-md p-4 flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <h1
-          className="text-2xl font-bold cursor-pointer"
+          className="text-2xl font-bold text-slate-800 cursor-pointer hover:underline"
           onClick={handleRename}
           title="Klik om naam te wijzigen"
         >
           {title}
         </h1>
-        <button onClick={onExit} className="text-sm text-blue-600">
+
+        <button
+          onClick={onExit}
+          className="px-3 py-2 bg-slate-300 hover:bg-slate-400 rounded-lg text-slate-800 font-medium"
+        >
           Terug naar overzicht
         </button>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        <button onClick={() => onTabChange('REGISTRATION')} className={activeTab==='REGISTRATION'?'font-bold':''}>Registratie</button>
+      <div className="flex gap-3 flex-wrap">
+        <button onClick={() => onTabChange('REGISTRATION')} className={tabStyle('REGISTRATION')}>
+          Registratie
+        </button>
+
         {currentStatus !== EventStatus.REGISTRATION && (
           <>
-            <button onClick={() => onTabChange('ROUND1')} className={activeTab==='ROUND1'?'font-bold':''}>Ronde 1</button>
-            <button onClick={() => onTabChange('ROUND2')} className={activeTab==='ROUND2'?'font-bold':''}>Ronde 2</button>
-            <button onClick={() => onTabChange('RESULTS')} className={activeTab==='RESULTS'?'font-bold':''}>Uitslag</button>
+            <button onClick={() => onTabChange('ROUND1')} className={tabStyle('ROUND1')}>
+              Ronde 1
+            </button>
+            <button onClick={() => onTabChange('ROUND2')} className={tabStyle('ROUND2')}>
+              Ronde 2
+            </button>
+            <button onClick={() => onTabChange('RESULTS')} className={tabStyle('RESULTS')}>
+              Uitslag
+            </button>
           </>
         )}
       </div>
