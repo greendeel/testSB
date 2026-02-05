@@ -19,13 +19,12 @@ const App: React.FC = () => {
   const [isScoring, setIsScoring] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => localStorage.getItem('kajuit_auth') === 'true');
 
-  // Voorkomt meerdere gelijktijdige loads
   const isLoadingRef = useRef(false);
+  const isCreatingEventRef = useRef(false);
 
   const loadEvents = async () => {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
-
     try {
       const data = await getEvents();
       setEvents(data);
@@ -36,21 +35,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadEvents();
-
     const channel = supabase
       .channel('events-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'events' },
-        () => {
-          loadEvents();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadEvents())
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const updateEvent = async (updatedEvent: CardEvent) => {
@@ -60,18 +50,31 @@ const App: React.FC = () => {
   const activeEvent = events.find(e => e.id === activeEventId) || null;
 
   const createEvent = async (title: string) => {
-    const newEvent: CardEvent = {
-      id: generateId(),
-      title,
-      date: new Date().toLocaleDateString('nl-NL'),
-      status: EventStatus.REGISTRATION,
-      participants: [],
-      rounds: []
-    };
+    if (isCreatingEventRef.current) return;
+    isCreatingEventRef.current = true;
 
-    await updateEvent(newEvent);
-    setActiveEventId(newEvent.id);
-    setActiveTab('REGISTRATION');
+    try {
+      const newEvent: CardEvent = {
+        id: generateId(),
+        title,
+        date: new Date().toLocaleDateString('nl-NL'),
+        status: EventStatus.REGISTRATION,
+        participants: [],
+        rounds: []
+      };
+
+      await updateEvent(newEvent);
+      setActiveEventId(newEvent.id);
+      setActiveTab('REGISTRATION');
+    } finally {
+      isCreatingEventRef.current = false;
+    }
+  };
+
+  // 🆕 Titel wijzigen
+  const renameEvent = async (newTitle: string) => {
+    if (!activeEvent) return;
+    await updateEvent({ ...activeEvent, title: newTitle });
   };
 
   const deleteEvent = async (id: string) => {
@@ -164,7 +167,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Voorkomt grijs scherm terwijl nieuw event nog niet in state zit
   if (activeEventId && !activeEvent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100 text-slate-600 text-xl">
@@ -181,6 +183,7 @@ const App: React.FC = () => {
         onTabChange={setActiveTab}
         onExit={() => setActiveEventId(null)}
         title={activeEvent.title}
+        onRename={renameEvent}   // 🆕
       />
 
       {activeTab === 'REGISTRATION' && (
