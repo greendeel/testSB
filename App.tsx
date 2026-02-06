@@ -38,7 +38,7 @@ const App: React.FC = () => {
     await saveEvent(updatedEvent);
   };
 
-  const activeEvent = events.find(e => e.id === activeEventId);
+  const activeEvent = events.find(e => e.id === activeEventId) || null;
 
   const createEvent = async (title: string) => {
     const newEvent: CardEvent = {
@@ -146,17 +146,19 @@ const App: React.FC = () => {
     );
   }
 
+  if (!activeEvent) return null; // voorkomt crash tijdens laden
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">
       <Navigation
-        currentStatus={activeEvent!.status}
+        currentStatus={activeEvent.status}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onExit={() => setActiveEventId(null)}
-        title={activeEvent!.title}
+        title={activeEvent.title}
       />
 
-      {activeTab === 'REGISTRATION' && activeEvent && (
+      {activeTab === 'REGISTRATION' && (
         <RegistrationView
           participants={activeEvent.participants}
           customNames={{ Jokeren: [], Rikken: [] }}
@@ -168,8 +170,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* ROUND 1 */}
-      {activeTab === 'ROUND1' && activeEvent?.rounds[0]?.tables.length === 0 && (
+      {activeTab === 'ROUND1' && activeEvent.rounds[0]?.tables.length === 0 && (
         <TableAssignmentView
           participants={activeEvent.participants}
           initialTables={[]}
@@ -179,7 +180,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND1' && activeEvent?.rounds[0]?.tables.length > 0 && (
+      {activeTab === 'ROUND1' && activeEvent.rounds[0]?.tables.length > 0 && (
         <RoundView
           round={activeEvent.rounds[0]}
           participants={activeEvent.participants}
@@ -198,8 +199,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* ROUND 2 */}
-      {activeTab === 'ROUND2' && activeEvent?.rounds[1]?.tables.length === 0 && (
+      {activeTab === 'ROUND2' && activeEvent.rounds[1]?.tables.length === 0 && (
         <TableAssignmentView
           participants={activeEvent.participants}
           initialTables={[]}
@@ -209,7 +209,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'ROUND2' && activeEvent?.rounds[1]?.tables.length > 0 && (
+      {activeTab === 'ROUND2' && activeEvent.rounds[1]?.tables.length > 0 && (
         <RoundView
           round={activeEvent.rounds[1]}
           participants={activeEvent.participants}
@@ -228,7 +228,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {activeTab === 'RESULTS' && activeEvent && (
+      {activeTab === 'RESULTS' && (
         <ResultsView
           participants={activeEvent.participants}
           rounds={activeEvent.rounds}
