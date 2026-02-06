@@ -28,13 +28,20 @@ const RoundView: React.FC<Props> = ({
 
   const getGameStyle = (game: GameType) =>
     game === 'Jokeren'
-      ? { bg: 'bg-purple-50', title: 'text-purple-700' }
-      : { bg: 'bg-orange-50', title: 'text-orange-700' };
+      ? {
+          bg: 'bg-purple-50',
+          border: 'border-purple-200',
+          title: 'text-purple-700'
+        }
+      : {
+          bg: 'bg-orange-50',
+          border: 'border-orange-200',
+          title: 'text-orange-700'
+        };
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8 pb-64">
 
-      {/* ================= TAFEL OVERZICHT ================= */}
       {!isScoring && (
         <>
           <div className="bg-yellow-100 p-6 rounded-[2.5rem] border-4 border-yellow-400 text-center">
@@ -53,7 +60,7 @@ const RoundView: React.FC<Props> = ({
               return (
                 <div
                   key={table.id}
-                  className={`p-6 rounded-[2.5rem] border-4 ${style.bg} space-y-4 shadow-md`}
+                  className={`p-6 rounded-[2.5rem] border-4 ${style.border} ${style.bg} space-y-4 shadow-md`}
                 >
                   <div className="flex justify-between items-center border-b-2 border-slate-200 pb-3">
                     <h3 className={`text-2xl font-black uppercase ${style.title}`}>
@@ -99,7 +106,6 @@ const RoundView: React.FC<Props> = ({
         </>
       )}
 
-      {/* ================= SCORE INVOER ================= */}
       {isScoring && (
         <>
           <div className="bg-green-100 p-6 rounded-[2.5rem] border-4 border-green-400 text-center">
