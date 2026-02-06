@@ -64,24 +64,10 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
     return tableCounts;
   };
 
-  const validate = () => {
-    if (participants.length === 0) return false;
-    return participants.every(p => assignments[p.id] && assignments[p.id] > 0);
-  };
+  const validate = () => participants.length > 0 && participants.every(p => assignments[p.id] && assignments[p.id] > 0);
 
   const handleConfirmAction = () => {
     if (!validate()) return;
-
-    const statsJ = getTableStats('Jokeren');
-    const statsR = getTableStats('Rikken');
-    const invalid = [
-      ...Object.entries(statsJ).filter(([_, count]) => count !== 4).map(([num]) => `Jokeren Tafel ${num}`),
-      ...Object.entries(statsR).filter(([_, count]) => count !== 4).map(([num]) => `Rikken Tafel ${num}`)
-    ];
-
-    if (invalid.length > 0) {
-      if (!window.confirm("Let op: Sommige tafels hebben geen 4 spelers. Wilt u toch doorgaan?")) return;
-    }
 
     const tables: Table[] = [];
     ['Jokeren', 'Rikken'].forEach((game: any) => {
@@ -103,27 +89,21 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
 
   const renderGameList = (game: GameType, color: string, bg: string) => {
     const players = participants.filter(p => p.game === game);
-    const stats = getTableStats(game);
     if (players.length === 0) return null;
 
     return (
       <div className={`p-6 rounded-[2.5rem] border-4 ${bg} space-y-4 shadow-md`}>
-        <div className="flex justify-between items-center border-b-2 border-slate-200 pb-3">
-          <h3 className={`text-2xl font-black uppercase ${color}`}>{game}</h3>
-          <span className="text-lg font-bold text-slate-500 uppercase">{players.length} Spelers</span>
-        </div>
-
         <div className="grid gap-2">
           {players.map(p => (
-            <div key={p.id} className="bg-white p-2 rounded-2xl flex items-center justify-between border border-slate-100 shadow-sm gap-2">
+            <div key={p.id} className="bg-white py-2 px-3 rounded-xl flex items-center justify-between border border-slate-100 shadow-sm gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <button 
                   onClick={() => onUpdateParticipantGame(p.id, game === 'Jokeren' ? 'Rikken' : 'Jokeren')}
-                  className="p-1.5 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all shrink-0"
+                  className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all shrink-0"
                 >
                   <ArrowLeftRight size={18} />
                 </button>
-                <span className="text-2xl font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis leading-none">{p.name}</span>
+                <span className="text-2xl font-black text-slate-800 truncate">{p.name}</span>
               </div>
               <input 
                 type="number"
@@ -132,19 +112,10 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
                 onChange={(e) => handleTableChange(p.id, e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="?"
-                className="w-16 h-16 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-100 focus:border-blue-500 outline-none bg-slate-50"
+                className="w-14 h-14 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-100 focus:border-blue-500 outline-none bg-slate-50"
               />
             </div>
           ))}
-        </div>
-
-        <div className="pt-4 border-t-2 border-slate-200 flex flex-wrap gap-2">
-           {Object.keys(stats).map(Number).sort((a,b)=>a-b).map(num => (
-             <div key={num} className={`p-2 px-3 rounded-xl border-2 flex items-center gap-2 ${stats[num] === 4 ? 'bg-green-50 border-green-500 text-green-700' : 'bg-yellow-50 border-yellow-500 text-yellow-700'}`}>
-               <span className="font-black text-sm">T{num}:</span>
-               <span className="text-xl font-black">{stats[num]}</span>
-             </div>
-           ))}
         </div>
       </div>
     );
@@ -154,11 +125,6 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-8 pb-64">
-      <div className="bg-yellow-100 p-6 rounded-[2.5rem] border-4 border-yellow-400 text-center">
-        <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight">Tafelindeling {initialTables ? 'Aanpassen' : 'Invullen'}</h2>
-        <p className="text-xl text-slate-600 font-bold italic mt-1">Vul per persoon het getrokken tafelnummer in.</p>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-6">
         {renderGameList('Jokeren', 'text-purple-700', 'bg-purple-50')}
         {renderGameList('Rikken', 'text-orange-700', 'bg-orange-50')}
@@ -169,9 +135,8 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
           <button
             onClick={handleConfirmAction}
             disabled={!isValid}
-            className="w-full py-8 rounded-[2rem] text-3xl font-black border-b-[10px] shadow-xl transition-all uppercase flex items-center justify-center gap-4 bg-green-600 border-green-900 text-white active:translate-y-1 active:border-b-4 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:opacity-50"
+            className="w-full py-8 rounded-[2rem] text-3xl font-black border-b-[10px] shadow-xl uppercase bg-green-600 border-green-900 text-white disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:opacity-50"
           >
-            {isValid && <CheckCircle2 size={36} />}
             BEVESTIG INDELING
           </button>
         </div>
