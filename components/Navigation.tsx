@@ -44,7 +44,7 @@ const Navigation: React.FC<NavigationProps> = ({
           <span className="text-base uppercase tracking-wider">Menu</span>
         </button>
 
-        <h1 className="text-base font-black uppercase tracking-tight truncate px-3 text-white max-w-[60%] text-center">
+        <h1 className="m-0 leading-none text-base font-black uppercase tracking-tight truncate px-3 text-white max-w-[60%] text-center">
           {title || "Kaartavond"}
         </h1>
 
