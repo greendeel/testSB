@@ -18,17 +18,21 @@ export default function RoundView({
   round,
   participants,
   onScoreChange,
-  onFinishRound
+  onFinishRound,
+  isEventFinished
 }: RoundViewProps) {
   const [localScores, setLocalScores] = useState<Record<string, string>>({});
 
   const handleScoreInput = (participantId: string, value: string) => {
+    if (isEventFinished) return;
     setLocalScores(prev => ({ ...prev, [participantId]: value }));
     const parsed = parseInt(value);
     onScoreChange(participantId, isNaN(parsed) ? 0 : parsed);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isEventFinished) return;
+
     if (e.key === 'Enter') {
       e.preventDefault();
       const inputs = Array.from(document.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
@@ -36,8 +40,6 @@ export default function RoundView({
       if (currentIndex > -1 && currentIndex < inputs.length - 1) {
         inputs[currentIndex + 1].focus();
         inputs[currentIndex + 1].select();
-      } else if (allValid) {
-        onFinishRound();
       }
     }
   };
@@ -112,10 +114,15 @@ export default function RoundView({
                     <input
                       type="number"
                       inputMode="numeric"
+                      disabled={isEventFinished}
                       value={localScores[player.id] ?? round.scores[player.id] ?? ''}
                       onChange={e => handleScoreInput(player.id, e.target.value)}
                       onKeyDown={handleKeyDown}
-                      className="w-24 h-16 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-100 focus:border-blue-500 outline-none bg-slate-50"
+                      className={`w-24 h-16 text-center text-3xl font-black rounded-xl border-4 outline-none ${
+                        isEventFinished
+                          ? 'bg-slate-200 border-slate-200 text-slate-500'
+                          : 'text-slate-900 border-slate-100 focus:border-blue-500 bg-slate-50'
+                      }`}
                     />
                   </div>
                 ))}
@@ -138,14 +145,14 @@ export default function RoundView({
         <div className="max-w-md mx-auto pointer-events-auto">
           <button
             onClick={onFinishRound}
-            disabled={!allValid}
+            disabled={!allValid || isEventFinished}
             className={`w-full py-6 rounded-[2rem] text-3xl font-black border-b-[10px] shadow-xl uppercase flex items-center justify-center gap-3 transition-all ${
-              allValid
+              allValid && !isEventFinished
                 ? 'bg-green-600 border-green-900 text-white active:translate-y-2 active:border-b-4'
                 : 'bg-slate-300 border-slate-400 text-slate-500 opacity-50'
             }`}
           >
-            {allValid && <CheckCircle2 size={32} />}
+            {allValid && !isEventFinished && <CheckCircle2 size={32} />}
             {buttonText}
           </button>
         </div>
