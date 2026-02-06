@@ -1,3 +1,4 @@
+<h1 style={{color: 'red'}}>ROUNDVIEW ACTIEF</h1>
 import React from 'react';
 import { Round, Participant } from '../types';
 
