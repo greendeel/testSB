@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Participant, Table, GameType } from '../types';
-import { Sparkles, CheckCircle2, AlertCircle, Repeat, Users, ArrowLeftRight } from 'lucide-react';
+import { CheckCircle2, ArrowLeftRight } from 'lucide-react';
 
 interface TableAssignmentViewProps {
   participants: Participant[];
@@ -20,7 +19,6 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
 }) => {
   const [assignments, setAssignments] = useState<Record<string, number>>({});
 
-  // Initialiseer met bestaande tafels indien aanwezig
   useEffect(() => {
     if (initialTables && initialTables.length > 0) {
       const initial: Record<string, number> = {};
@@ -117,7 +115,7 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
 
         <div className="grid gap-2">
           {players.map(p => (
-            <div key={p.id} className="bg-white p-3 rounded-2xl flex items-center justify-between border border-slate-100 shadow-sm gap-2">
+            <div key={p.id} className="bg-white p-2 rounded-2xl flex items-center justify-between border border-slate-100 shadow-sm gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <button 
                   onClick={() => onUpdateParticipantGame(p.id, game === 'Jokeren' ? 'Rikken' : 'Jokeren')}
@@ -127,17 +125,15 @@ const TableAssignmentView: React.FC<TableAssignmentViewProps> = ({
                 </button>
                 <span className="text-2xl font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis leading-none">{p.name}</span>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <input 
-                  type="number"
-                  inputMode="numeric"
-                  value={assignments[p.id] || ''}
-                  onChange={(e) => handleTableChange(p.id, e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="?"
-                  className="w-16 h-16 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-100 focus:border-blue-500 outline-none bg-slate-50"
-                />
-              </div>
+              <input 
+                type="number"
+                inputMode="numeric"
+                value={assignments[p.id] || ''}
+                onChange={(e) => handleTableChange(p.id, e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="?"
+                className="w-16 h-16 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-100 focus:border-blue-500 outline-none bg-slate-50"
+              />
             </div>
           ))}
         </div>
