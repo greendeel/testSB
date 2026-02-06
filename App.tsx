@@ -119,6 +119,8 @@ const setRoundTables = async (roundIndex: number, tables: Table[]) => {
 
   await updateEvent({ ...activeEvent, rounds: updatedRounds });
 
+  // 🔥 Forceer dat RoundView getoond wordt
+  setActiveTab(roundIndex === 0 ? 'ROUND1' : 'ROUND2');
   setIsScoring(false);
 };
 
