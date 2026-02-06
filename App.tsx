@@ -10,6 +10,7 @@ import LoginView from './components/LoginView';
 import { getEvents, saveEvent, deleteEvent as deleteEventFromDB, generateId } from './services/storage';
 import { supabase } from './services/supabaseClient';
 
+
 const CLUB_CODE = '26091976';
 
 const App: React.FC = () => {
