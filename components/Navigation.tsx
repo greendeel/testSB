@@ -32,7 +32,7 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="sticky top-0 z-[999] bg-slate-900 text-white shadow-xl print:hidden">
+    <nav className="sticky top-0 z-[999] bg-slate-900 text-white shadow-xl print:hidden !h-auto">
       
       {/* Bovenbalk */}
       <div className="flex items-center justify-between px-4 py-2 border-b-2 border-slate-950">
