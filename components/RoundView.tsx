@@ -149,11 +149,20 @@ const RoundView: React.FC<Props> = ({
                           className="w-20 h-20 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-200 focus:border-green-500 outline-none bg-slate-50"
                           value={round.scores?.[pid] ?? ''}
                           onChange={(e) => {
-                            const val = e.target.value.replace(',', '.');
-                            if (/^-?\d*$/.test(val)) {
-                              onScoreChange(pid, val === '' ? 0 : Number(val));
-                            }
-                          }}
+  const val = e.target.value.replace(',', '.');
+
+  // Sta leeg veld en alleen "-" tijdelijk toe tijdens typen
+  if (val === '' || val === '-') {
+    onScoreChange(pid, 0);
+    return;
+  }
+
+  // Sta geldige positieve en negatieve getallen toe
+  if (/^-?\d+$/.test(val)) {
+    onScoreChange(pid, Number(val));
+  }
+}}
+
                         />
                       </div>
                     ))}
