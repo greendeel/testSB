@@ -35,16 +35,16 @@ const Navigation: React.FC<NavigationProps> = ({
     <nav className="sticky top-0 z-[999] bg-slate-900 text-white shadow-xl print:hidden">
       
       {/* Bovenbalk */}
-      <div className="flex items-center justify-between px-4 py-1.5 border-b-2 border-slate-950">
+      <div className="flex items-center justify-between px-4 h-12 border-b-2 border-slate-950">
         <button 
           onClick={onExit}
-          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border-2 border-slate-600 font-black transition-all active:scale-95 text-yellow-400 group cursor-pointer"
+          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl border-2 border-slate-600 font-black transition-all active:scale-95 text-yellow-400 group cursor-pointer"
         >
-          <ChevronLeft size={14} />
-          <span className="text-sm uppercase tracking-wider">Menu</span>
+          <ChevronLeft size={16} />
+          <span className="text-base uppercase tracking-wider">Menu</span>
         </button>
 
-        <h1 className="text-sm font-black uppercase tracking-tight truncate px-3 text-white max-w-[60%] text-center">
+        <h1 className="text-base font-black uppercase tracking-tight truncate px-3 text-white max-w-[60%] text-center">
           {title || "Kaartavond"}
         </h1>
 
