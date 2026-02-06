@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Round, Participant } from '../types';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface RoundViewProps {
   round: Round;
   participants: Participant[];
   onScoreChange: (participantId: string, score: number) => void;
+  onConfirmRound?: () => void; // bestond al eerder in jouw versie
 }
 
-
-export default function RoundView({ round, participants, onScoreChange }: RoundViewProps) {
+export default function RoundView({ round, participants, onScoreChange, onConfirmRound }: RoundViewProps) {
   const [localScores, setLocalScores] = useState<Record<string, string>>({});
 
-  
   const handleScoreInput = (participantId: string, value: string) => {
     setLocalScores(prev => ({ ...prev, [participantId]: value }));
     const parsed = parseInt(value);
@@ -21,8 +21,13 @@ export default function RoundView({ round, participants, onScoreChange }: RoundV
   const getParticipantsForTable = (ids: string[]) =>
     ids.map(id => participants.find(p => p.id === id)).filter(Boolean) as Participant[];
 
+  const getTableSum = (ids: string[]) =>
+    ids.reduce((total, pid) => total + (round.scores[pid] || 0), 0);
+
+  const allTablesValid = round.tables.every(t => getTableSum(t.participantIds) === 0);
+
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-8 pb-40">
+    <div className="p-4 max-w-7xl mx-auto space-y-8 pb-56">
 
       <div className="bg-blue-100 p-6 rounded-[2.5rem] border-4 border-blue-300 text-center">
         <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight">
@@ -37,6 +42,7 @@ export default function RoundView({ round, participants, onScoreChange }: RoundV
         {round.tables.map(table => {
           const tablePlayers = getParticipantsForTable(table.participantIds);
           const isJokeren = table.game === 'Jokeren';
+          const sum = getTableSum(table.participantIds);
 
           return (
             <div
@@ -74,10 +80,34 @@ export default function RoundView({ round, participants, onScoreChange }: RoundV
                   </div>
                 ))}
               </div>
+
+              <div className={`p-3 rounded-xl border-2 flex items-center gap-3 ${
+                sum === 0 ? 'bg-green-50 border-green-500 text-green-700' : 'bg-red-50 border-red-500 text-red-700'
+              }`}>
+                {sum === 0 ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                <span className="text-lg font-black">
+                  Totaal tafel = {sum}
+                </span>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {onConfirmRound && (
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-100 to-transparent z-50 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <button
+              onClick={onConfirmRound}
+              disabled={!allTablesValid}
+              className="w-full py-8 rounded-[2rem] text-3xl font-black border-b-[10px] shadow-xl transition-all uppercase flex items-center justify-center gap-4 bg-green-600 border-green-900 text-white active:translate-y-1 active:border-b-4 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:opacity-50"
+            >
+              {allTablesValid && <CheckCircle2 size={36} />}
+              VERDER NAAR RONDE 2
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
