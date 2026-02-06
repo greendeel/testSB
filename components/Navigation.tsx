@@ -63,7 +63,7 @@ const Navigation: React.FC<NavigationProps> = ({
               key={tab.id}
               disabled={locked}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 min-w-[120px] py-1.5 flex flex-col items-center gap-1 border-b-4 rounded-xl border-black transition-all ${
+              className={`flex-1 min-w-[120px] py-1.5 flex flex-col items-center gap-0 border-b-4 rounded-xl border-black transition-all ${
                 active 
                   ? 'border-yellow-400 bg-blue-600 text-white'
                   : locked 
