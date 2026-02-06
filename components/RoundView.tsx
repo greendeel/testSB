@@ -14,7 +14,7 @@ export default function RoundView({ round, participants, onScoreChange }: RoundV
     setLocalScores(prev => ({ ...prev, [participantId]: value }));
     const parsed = parseInt(value);
     onScoreChange(participantId, isNaN(parsed) ? 0 : parsed);
-  }; 
+  };
 
   const getParticipantsForTable = (ids: string[]) =>
     ids.map(id => participants.find(p => p.id === id)).filter(Boolean) as Participant[];
