@@ -115,53 +115,76 @@ const RoundView: React.FC<Props> = ({
       {/* ================= SCORE INVOER ================= */}
 {isScoring && (
   <>
-    <div className="bg-green-100 p-6 rounded-[2.5rem] border-4 border-green-400 text-center max-w-3xl mx-auto">
+    <div className="bg-green-100 p-6 rounded-[2.5rem] border-4 border-green-400 text-center">
       <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight">
         Scores invoeren
       </h2>
-      <p className="text-lg text-slate-600 font-bold italic mt-1">
-        Vul per speler de behaalde score in.
+      <p className="text-xl text-slate-600 font-bold italic mt-1">
+        Vul per tafel de scores in.
       </p>
     </div>
 
-    <div className="grid gap-4 max-w-2xl mx-auto mt-6">
-      {participants.map(p => (
-        <div
-          key={p.id}
-          className="bg-white px-6 py-4 rounded-[2rem] border-2 border-slate-200 shadow-sm flex items-center justify-between"
-        >
-          <span className="text-2xl font-black text-slate-800">
-            {p.name}
-          </span>
+    <div className="grid lg:grid-cols-2 gap-6">
+      {round.tables.map((table, index) => {
+        const style = getGameStyle(table.game);
 
-          <input
-            type="number"
-            inputMode="numeric"
-            className="w-20 h-20 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-200 focus:border-green-500 outline-none bg-slate-50"
-            value={round.scores?.[p.id] ?? ''}
-            onChange={(e) => onScoreChange(p.id, Number(e.target.value))}
-          />
-        </div>
-      ))}
+        return (
+          <div
+            key={table.id}
+            className={`p-6 rounded-[2.5rem] border-4 ${style.border} ${style.bg} space-y-4 shadow-md`}
+          >
+            <div className="flex justify-between items-center border-b-2 border-slate-200 pb-3">
+              <h3 className={`text-2xl font-black uppercase ${style.title}`}>
+                {table.game}
+              </h3>
+              <span className="text-lg font-bold text-slate-500 uppercase">
+                Tafel {index + 1}
+              </span>
+            </div>
+
+            <div className="grid gap-3">
+              {table.participantIds.map(pid => (
+                <div
+                  key={pid}
+                  className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"
+                >
+                  <span className="text-2xl font-black text-slate-800">
+                    {getName(pid)}
+                  </span>
+
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    className="w-20 h-20 text-center text-3xl font-black text-slate-900 rounded-xl border-4 border-slate-200 focus:border-green-500 outline-none bg-slate-50"
+                    value={round.scores?.[pid] ?? ''}
+                    onChange={(e) => onScoreChange(pid, Number(e.target.value))}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
 
-    <div className="flex gap-6 justify-center mt-8">
+    <div className="flex gap-6 justify-center pt-10">
       <button
         onClick={() => setIsScoring(false)}
-        className="py-4 px-8 rounded-[1.5rem] text-lg font-black bg-slate-400 text-white shadow-sm"
+        className="py-5 px-10 rounded-[2rem] text-xl font-black bg-slate-400 text-white shadow-md"
       >
         Terug naar tafels
       </button>
 
       <button
         onClick={onFinishRound}
-        className="py-4 px-8 rounded-[1.5rem] text-lg font-black bg-green-600 text-white border-b-[6px] border-green-900 shadow-md active:translate-y-1 active:border-b-2"
+        className="py-5 px-10 rounded-[2rem] text-xl font-black bg-green-600 text-white border-b-[8px] border-green-900 shadow-lg active:translate-y-1 active:border-b-4"
       >
         Ronde afronden
       </button>
     </div>
   </>
 )}
+
 
     </div>
   );
