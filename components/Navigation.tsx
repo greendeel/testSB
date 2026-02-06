@@ -38,7 +38,7 @@ const Navigation: React.FC<NavigationProps> = ({
       <div className="flex items-center justify-between px-4 py-2 border-b-2 border-slate-950">
         <button 
           onClick={onExit}
-          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg border border-slate-600 font-black transition-all active:scale-95 text-yellow-400 group cursor-pointer"
+          className="self-center flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg border border-slate-600 font-black transition-all active:scale-95 text-yellow-400 group cursor-pointer"
         >
           <ChevronLeft size={16} />
           <span className="text-base uppercase tracking-wider">Menu</span>
