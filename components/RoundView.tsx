@@ -33,6 +33,7 @@ export default function RoundView({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isEventFinished) return;
 
+    
     if (e.key === 'Enter') {
       e.preventDefault();
       const inputs = Array.from(document.querySelectorAll('input[type="number"]')) as HTMLInputElement[];
